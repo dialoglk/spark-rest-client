@@ -1,4 +1,5 @@
 # Spark REST Client - Polkichcha
+[![Build Status](https://travis-ci.org/dialoglk/spark-rest-client.svg?branch=master)](https://travis-ci.org/dialoglk/spark-rest-client)
 
 Polkichcha is a lightweight REST client to connect your spark cluster via a thrift server. Just submit the query in your HTTP request and Polkichcha will execute it on the thrift JDBC and present the results.
 
