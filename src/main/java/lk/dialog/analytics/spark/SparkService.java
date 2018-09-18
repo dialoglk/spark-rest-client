@@ -20,10 +20,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import lk.dialog.analytics.spark.models.JobResponse;
 import lk.dialog.analytics.spark.ops.QueryExecutor;
+import org.apache.log4j.Logger;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.Base64;
+import java.util.logging.LogManager;
 
 /**
  * This is the Microservice resource class.
@@ -36,8 +38,12 @@ import java.util.Base64;
 public class SparkService {
 
     private QueryExecutor executor;
+    private Logger logger;
     public SparkService() {
         executor = new QueryExecutor();
+        logger = Logger.getLogger(getClass());
+
+        logger.info("Ready for execution");
     }
 
     @GET
@@ -50,7 +56,7 @@ public class SparkService {
         String given = new String(decoder.decode(query));
         int id = (int) (Math.random() * 10000);
         boolean result = executor.submit(database, given, id);
-        System.out.println(String.format("Sending query: Database: %s\nQuery: %s\n", database, given));
+
         JobResponse response = new JobResponse();
         response.setSuccess(result);
         if (result) {
@@ -66,7 +72,9 @@ public class SparkService {
 
         JsonElement data = executor.getResult(id);
         if (data == null) {
-            return "ඒහෙම ලියුමක් අැවිල්ල නෑ";
+            JobResponse response = new JobResponse();
+            response.setSuccess(false);
+            return new Gson().toJson(response);
         }
 
         return new Gson().toJson(data);

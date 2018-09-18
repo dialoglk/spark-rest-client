@@ -25,6 +25,7 @@ import org.wso2.msf4j.MicroservicesRunner;
  */
 public class Application {
     public static void main(String[] args) {
+        System.out.println("Polkichcha has taken flight. It will fetch shiny things for you..!");
         new MicroservicesRunner(8080)
                 .deploy(new SparkService())
                 .start();

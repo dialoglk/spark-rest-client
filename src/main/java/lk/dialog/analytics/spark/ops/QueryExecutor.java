@@ -1,7 +1,9 @@
 package lk.dialog.analytics.spark.ops;
 
 import com.google.gson.JsonElement;
+import org.apache.log4j.Logger;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,10 +16,13 @@ public class QueryExecutor {
     private Map<String, Boolean> statusMap;
     private Map<Integer, JsonElement> resultsMap;
 
+    private Logger logger;
     public QueryExecutor() {
         connectionMap = new HashMap<>();
         statusMap = new HashMap<>();
         resultsMap = new HashMap<>();
+
+        logger = Logger.getLogger(getClass());
     }
 
 
@@ -31,11 +36,18 @@ public class QueryExecutor {
      */
     public boolean submit(String dbName, String query, Integer id) {
         if (statusMap.get(dbName) != null && statusMap.get(dbName)) {
+            logger.debug(String.format("Already running a query(id=%d) for DB '%s'", id, dbName));
             return false;
         }
 
         if (connectionMap.get(dbName) == null) {
-            connectionMap.put(dbName, new SparkConnection(dbName));
+            try {
+                connectionMap.put(dbName, new SparkConnection(dbName));
+            } catch (SQLException | ClassNotFoundException e) {
+                logger.warn(String.format("Could not create a connection to DB '%s'", dbName));
+                return false;
+            }
+
             statusMap.put(dbName, false);
         }
 
@@ -43,6 +55,7 @@ public class QueryExecutor {
         statusMap.put(dbName, true);
 
         new Thread(new QueryThread(id, query, connection)).start();
+        logger.debug(String.format("Query submit for db: %s ID=%d", dbName, id));
         return true;
     }
 

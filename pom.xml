@@ -27,9 +27,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>lk.dialog.analytics</groupId>
-    <artifactId>spark-query-api</artifactId>
-    <version>0.1</version>
-    <name>WSO2 MSF4J Microservice</name>
+    <artifactId>spark-rest-client</artifactId>
+    <version>0.4</version>
+    <name>Polkichcha</name>
 
 
     <dependencies>

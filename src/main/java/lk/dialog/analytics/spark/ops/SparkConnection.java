@@ -3,40 +3,36 @@ package lk.dialog.analytics.spark.ops;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.log4j.Logger;
 
 import java.sql.*;
 
 public class SparkConnection {
 
     private Connection connection;
+    private Logger logger;
 
-    public SparkConnection(String database) {
+    public SparkConnection(String database) throws SQLException, ClassNotFoundException {
         AppProperties properties = AppProperties.getInstance();
 
-        try {
-            Class.forName("org.apache.hive.jdbc.HiveDriver");
-            connection = DriverManager.getConnection(
-                    String.format("jdbc:hive2://%s:%d/%s", properties.getIpAddress(), properties.getPort(), database),
-                    "",
-                    "");
+        Class.forName("org.apache.hive.jdbc.HiveDriver");
+        connection = DriverManager.getConnection(
+                String.format("jdbc:hive2://%s:%d/%s", properties.getIpAddress(), properties.getPort(), database),
+                properties.getUsername(),
+                properties.getPassword());
 
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+
+        logger = Logger.getLogger(getClass());
 
 
     }
 
 
     public JsonElement execute(String query) {
-        System.out.println("trying to execute " + query);
         JsonArray result = new JsonArray();
         try {
             Statement statement = connection.createStatement();
             ResultSet rs = statement.executeQuery(query);
-            System.out.println("query executed");
             ResultSetMetaData metaData = rs.getMetaData();
             String[] columns = new String[metaData.getColumnCount()];
             for (int i = 1; i <= columns.length; i++) {
