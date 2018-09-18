@@ -18,6 +18,19 @@ THRIFT_PASSWORD=
 ```
   - run the package ```java -jar spark-rest-client-vv.jar```
 
+## Querying
+- To run a query, do a HTTP GET to 
+```http://your.server.ip.or.hostname:8080/query/databasename/q=base64-ed-query```
+The path parameter you give for 'q' should be Base64 encoded before submission
+
+When a valid query is submit, you will receive an ID for reference.
+
+- To retrieve the results of the query, do an HTTP GET to
+```http://your.server.ip.or.hostname:8080/status/{ID}```
+
+You will receive the results in a JSON array, attributes corresponding to columns and values for the value in the respective row.
+
+
 ## Contributions
 May it be an open issue, or your own idea, just fork and give us a pull. We will surely merge if its good.
 
