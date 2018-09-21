@@ -1,6 +1,7 @@
 package lk.dialog.analytics.spark.ops;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
@@ -91,10 +92,10 @@ public class QueryExecutor {
         @Override
         public void run() {
             JsonElement output = connection.execute(query);
-            resultsMap.put(id, output);
+            JsonObject finalOutput = new JsonObject();
+            finalOutput.add("results", output);
+            finalOutput.addProperty("success", true);
+            resultsMap.put(id, finalOutput);
         }
     }
-
-
-
 }

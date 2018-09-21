@@ -16,6 +16,8 @@
 
 package lk.dialog.analytics.spark;
 
+import lk.dialog.analytics.spark.ops.AppProperties;
+import lk.dialog.analytics.spark.service.SparkService;
 import org.wso2.msf4j.MicroservicesRunner;
 
 /**
@@ -24,9 +26,10 @@ import org.wso2.msf4j.MicroservicesRunner;
  * @since 0.1
  */
 public class Application {
+    public static AppProperties ourInstance = new AppProperties();
     public static void main(String[] args) {
         System.out.println("Polkichcha has taken flight. It will fetch shiny things for you..!");
-        new MicroservicesRunner(8080)
+        new MicroservicesRunner(Integer.parseInt(ourInstance.getListenPort()))
                 .deploy(new SparkService())
                 .start();
     }

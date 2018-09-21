@@ -7,24 +7,31 @@ import org.apache.log4j.Logger;
 
 import java.sql.*;
 
+import static lk.dialog.analytics.spark.Application.ourInstance;
+
 public class SparkConnection {
 
     private Connection connection;
     private Logger logger;
 
     public SparkConnection(String database) throws SQLException, ClassNotFoundException {
-        AppProperties properties = AppProperties.getInstance();
 
         Class.forName("org.apache.hive.jdbc.HiveDriver");
         connection = DriverManager.getConnection(
-                String.format("jdbc:hive2://%s:%d/%s", properties.getIpAddress(), properties.getPort(), database),
-                properties.getUsername(),
-                properties.getPassword());
+                String.format("jdbc:hive2://%s:%d/%s", ourInstance.getIpAddress(), ourInstance.getPort(), database),
+                ourInstance.getUsername(),
+                ourInstance.getPassword());
+
+        connection.isClosed();
+
+        if (connection.isClosed()) {
+            System.out.println("Not connected to Spark shell");
+        } else {
+            System.out.println("Connected to Spark shell");
+        }
 
 
         logger = Logger.getLogger(getClass());
-
-
     }
 
 
