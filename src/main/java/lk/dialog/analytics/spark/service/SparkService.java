@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package lk.dialog.analytics.spark;
+package lk.dialog.analytics.spark.service;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -79,6 +79,4 @@ public class SparkService {
 
         return new Gson().toJson(data);
     }
-
-
 }
