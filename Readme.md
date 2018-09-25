@@ -16,6 +16,8 @@ THRIFT_IP=host.or.ip.here
 THRIFT_PORT=8089
 THRIFT_USERNAME=
 THRIFT_PASSWORD=
+JOB_QUEUE_SIZE=20
+TIME_PER_QUERY_MIN=10
 ```
   - run the package ```java -jar spark-rest-client-vv.jar```
 
@@ -29,9 +31,17 @@ When a valid query is submit, you will receive an ID for reference.
 - To retrieve the results of the query, do an HTTP GET to
 ```http://your.server.ip.or.hostname:8080/status/{ID}```
 
-You will receive the results in a JSON array, attributes corresponding to columns and values for the value in the respective row.
+You will receive the results in as a JSON Object. Observe the following attributes to asses
+the result of the query;
+```json
+"success": [true: whether the query was successful | false: query was not completed]
+"timedout": [true: query was timed out | false: query was not timed out]
+"data": [your data as JSON Array]
+
+```
 
 
 ## Contributions
-May it be an open issue, or your own idea, just fork and give us a pull. We will surely merge if its good.
+May it be an open issue, or your own idea, just fork and give us a pull. We will surely 
+merge if its good.
 

@@ -1,11 +1,21 @@
 package lk.dialog.analytics.spark.ops;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import lk.dialog.analytics.spark.models.JobResponse;
 import org.apache.log4j.Logger;
+import org.eclipse.jetty.deploy.App;
+import sun.nio.ch.ThreadPool;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Executes and fetches query results for thrift connections made to the spark database
@@ -14,13 +24,16 @@ public class QueryExecutor {
 
     private Map<String, SparkConnection> connectionMap;
     private Map<String, Boolean> statusMap;
-    private Map<Integer, JsonElement> resultsMap;
+    private Map<String, ThreadPoolExecutor> executorMap;
+    private Map<Integer, JobResponse> resultsMap;
+
 
     private Logger logger;
     public QueryExecutor() {
         connectionMap = new HashMap<>();
         statusMap = new HashMap<>();
         resultsMap = new HashMap<>();
+        executorMap = new HashMap<>();
 
         logger = Logger.getLogger(getClass());
     }
@@ -35,9 +48,17 @@ public class QueryExecutor {
      * @return
      */
     public boolean submit(String dbName, String query, Integer id) {
-        System.out.println(String.format("submitting a query(id=%d) for DB '%s'", id, dbName));
-        if (statusMap.get(dbName) != null && statusMap.get(dbName)) {
-            logger.info(String.format("Already running a query(id=%d) for DB '%s'", id, dbName));
+
+        //if the executor for this db is missing, create it.
+        if (executorMap.get(dbName) == null) {
+            executorMap.put(dbName, new ThreadPoolExecutor(1, 1,
+                    AppProperties.getInstance().getExecTimeMin(), TimeUnit.MINUTES,
+                    new ArrayBlockingQueue<>(AppProperties.getInstance().getQueueSize())));
+        }
+
+        //check whether the executor for this db is at full capacity
+        if(executorMap.get(dbName).getQueue().remainingCapacity() == 0) {
+            logger.info(String.format("Queue full for DB '%s'", id, dbName));
             return false;
         }
 
@@ -54,9 +75,10 @@ public class QueryExecutor {
 
         //fetch the connection from the connections map and set the query running state to true
         SparkConnection connection = connectionMap.get(dbName);
-        statusMap.put(dbName, true);
 
-        new Thread(new QueryThread(id, query, connection, dbName)).start();
+        QueryThread thread = new QueryThread(id, query, connection, dbName);
+        executorMap.get(dbName).submit(thread);
+
         logger.debug(String.format("Query submit for db: %s ID=%d", dbName, id));
         return true;
     }
@@ -68,8 +90,8 @@ public class QueryExecutor {
      * @param id
      * @return
      */
-    public JsonElement getResult(Integer id) {
-        JsonElement data = resultsMap.get(id);
+    public JobResponse getResult(Integer id) {
+        JobResponse data = resultsMap.get(id);
         if (data != null) {
             resultsMap.remove(id);
         }
@@ -78,6 +100,9 @@ public class QueryExecutor {
     }
 
 
+    /**
+     * Executes the actual query using the given connection.
+     */
     private class QueryThread implements Runnable {
 
         private Integer id;
@@ -94,11 +119,32 @@ public class QueryExecutor {
 
         @Override
         public void run() {
-            JsonElement output = connection.execute(query);
-            resultsMap.put(id, output);
+            try {
+                JsonArray output = (JsonArray) connection.execute(query);
+                JobResponse response = new JobResponse();
+                if(output != null) {
+                    response.setSuccess(true);
+                    response.setTimedout(false);
+                    response.setData(output);
+                } else {
+                    response.setSuccess(false);
+                    response.setTimedout(true);
+                }
 
-            //free the resource after the query is done
-            statusMap.remove(dbName);
+                resultsMap.put(id, response);
+
+            } catch (Exception e) {
+                System.out.println("we got killed");
+                e.printStackTrace();
+                JobResponse response = new JobResponse();
+                response.setSuccess(true);
+                response.setTimedout(false);
+                resultsMap.put(id, response);
+            }
+        }
+
+        public Integer getId() {
+            return id;
         }
     }
 

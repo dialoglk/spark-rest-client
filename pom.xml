@@ -28,7 +28,7 @@
 
     <groupId>lk.dialog.analytics</groupId>
     <artifactId>spark-rest-client</artifactId>
-    <version>0.4</version>
+    <version>0.5</version>
     <name>Polkichcha</name>
 
 
@@ -59,6 +59,10 @@
                 <exclusion>
                     <artifactId>netty-all</artifactId>
                     <groupId>io.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>com.sun.jersey</artifactId>
+                    <groupId>jersey-core</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
