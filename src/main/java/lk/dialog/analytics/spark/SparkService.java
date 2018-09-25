@@ -50,13 +50,10 @@ public class SparkService {
     @Path("/query/{database}")
     @Produces("application/json")
     public String get(@PathParam("database")String database, @QueryParam("q")String query) {
-        System.out.println("get called");
-
         Base64.Decoder decoder = Base64.getDecoder();
         String given = new String(decoder.decode(query));
         int id = (int) (Math.random() * 10000);
         boolean result = executor.submit(database, given, id);
-
         JobResponse response = new JobResponse();
         response.setSuccess(result);
         if (result) {
