@@ -17,6 +17,7 @@
 package lk.dialog.analytics.spark;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import lk.dialog.analytics.spark.models.JobResponse;
 import lk.dialog.analytics.spark.ops.QueryExecutor;
@@ -67,14 +68,18 @@ public class SparkService {
     @Produces("application/json")
     public String get(@PathParam("id")Integer id) {
 
-        JsonElement data = executor.getResult(id);
-        if (data == null) {
-            JobResponse response = new JobResponse();
+        JobResponse response = executor.getResult(id);
+
+        if (response == null) {
+            response = new JobResponse();
             response.setSuccess(false);
+            return new Gson().toJson(response);
+
+        } else {
             return new Gson().toJson(response);
         }
 
-        return new Gson().toJson(data);
+
     }
 
 
