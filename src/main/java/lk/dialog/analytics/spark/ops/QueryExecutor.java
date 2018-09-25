@@ -37,7 +37,6 @@ public class QueryExecutor {
     public boolean submit(String dbName, String query, Integer id) {
         System.out.println(String.format("submitting a query(id=%d) for DB '%s'", id, dbName));
         if (statusMap.get(dbName) != null && statusMap.get(dbName)) {
-            System.out.println(String.format("Already running a query(id=%d) for DB '%s'", id, dbName));
             logger.info(String.format("Already running a query(id=%d) for DB '%s'", id, dbName));
             return false;
         }
@@ -49,7 +48,6 @@ public class QueryExecutor {
                 connectionMap.put(dbName, new SparkConnection(dbName));
             } catch (SQLException | ClassNotFoundException e) {
                 logger.warn(String.format("Could not create a connection to DB '%s'", dbName));
-                System.out.println(String.format("Could not create a connection to DB '%s'", dbName));
                 return false;
             }
         }
