@@ -76,9 +76,9 @@ public class QueryExecutor {
         //fetch the connection from the connections map and set the query running state to true
         SparkConnection connection = connectionMap.get(dbName);
 
-
         QueryThread thread = new QueryThread(id, query, connection, dbName);
         executorMap.get(dbName).submit(thread);
+
         logger.debug(String.format("Query submit for db: %s ID=%d", dbName, id));
         return true;
     }
